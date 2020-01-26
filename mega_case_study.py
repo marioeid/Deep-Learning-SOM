@@ -51,6 +51,63 @@ show()
 
 mappings=som.win_map(X)
 # concatenate the white nodes (farthest distnace on the map)
-frauds=np.concatenate((mappings[(8,7)],mappings[(4,1)]),axis=0)
+frauds=np.concatenate((mappings[(8,6)],mappings[(7,6)]),axis=0)
+frauds=sc.inverse_transform(frauds)
 
- 
+
+# going from un suprvised deep learning to suprvised deep learning 
+
+# creating matrix of features 
+
+customers=dataset.iloc[:,1:].values 
+
+# creating independent variable 
+
+is_fraud=np.zeros(len(dataset))
+
+for i in range(len(dataset)):
+    if dataset.iloc[i,0] in frauds :
+        is_fraud[i]=1
+
+
+# Feature Scaling
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+customers = sc.fit_transform(customers)
+
+
+
+
+                    
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+
+# intializing the ANN
+classifier=Sequential()
+
+#Adding the input layer and the first hidden layer kernel intializer intialzies the weights intialy
+# relu is the reqtifier function
+
+# need to define the input in the first layer only
+classifier.add(Dense(units=2,kernel_initializer='uniform',activation='relu',input_dim=15))
+
+
+# adding the output layer
+classifier.add(Dense(units=1,kernel_initializer='uniform',activation='sigmoid'))
+
+# compiling the NN the algorithm u want to use is the optimizer (gradient descent)
+# here we will use one of the stochastic gradient algorithms and it's name is Adam
+# loss is the lost function in the gradient algo
+classifier.compile(optimizer='adam',loss='binary_crossentropy',metrics=['accuracy'])
+
+# Fitting classifier to the Training set
+# batch size size when to update weights 
+# epochs number of iterations on gradient descenet
+classifier.fit(customers,is_fraud,batch_size=1,epochs=2)
+                          
+                       
+# Predicting the probabilites of frauds 
+y_pred = classifier.predict(customers)
+# iloc[0:1] cause concatenation will only work if both 2d arrays and that's how to make it 2d array
+y_pred=np.concatenate((dataset.iloc[:,0:1].values,y_pred),axis=1)
+y_pred=y_pred[y_pred[:,1].argsort()] # sort by the column of index 1 
