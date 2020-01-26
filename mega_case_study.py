@@ -52,5 +52,5 @@ show()
 mappings=som.win_map(X)
 # concatenate the white nodes (farthest distnace on the map)
 frauds=np.concatenate((mappings[(8,7)],mappings[(4,1)]),axis=0)
-frauds=sc.inverse_transform(frauds)
+
  
